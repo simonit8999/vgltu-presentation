@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Международные автоперевозки — ВГЛТУ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0b0e14;
+    --bg-card: #121722;
+    --bg-card-hover: #161d2b;
+    --orange: #ff6b1a;
+    --orange-soft: rgba(255,107,26,0.12);
+    --orange-glow: rgba(255,107,26,0.25);
+    --text: #f0f2f5;
+    --muted: #8a93a6;
+    --line: rgba(255,255,255,0.07);
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck { position: relative; width: 100vw; height: 100vh; height: 100dvh; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 7vh 8vw;
+    padding-bottom: 100px; /* Отступ под нижнюю панель на мобилках */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+    overflow-y: auto;
+  }
+  .slide.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  /* Декоративный фон */
+  .slide::before {
+    content: "";
+    position: absolute;
+    top: -25%; right: -15%;
+    width: 60vw; height: 60vw;
+    background: radial-gradient(circle, var(--orange-glow), transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .slide::after {
+    content: "";
+    position: absolute;
+    bottom: -30%; left: -10%;
+    width: 40vw; height: 40vw;
+    background: radial-gradient(circle, rgba(255,107,26,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .slide > * { position: relative; z-index: 1; }
+
+  /* Типографика */
+  .kicker {
+    font-size: .75rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+  }
+  .kicker::before {
+    content: "";
+    width: 24px; height: 2px;
+    background: var(--orange);
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5.5vw, 4.8rem);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    max-width: 22ch;
+  }
+  h1 .accent { color: var(--orange); }
+
+  h2 {
+    font-size: clamp(1.5rem, 3.6vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    max-width: 28ch;
+  }
+
+  .subtitle {
+    margin-top: 1.5rem;
+    font-size: clamp(.95rem, 1.3vw, 1.15rem);
+    color: var(--muted);
+    max-width: 60ch;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  /* Большие цифры-факты */
+  .fact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .fact {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 2rem 1.8rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .3s, transform .3s;
+  }
+  .fact:hover { border-color: var(--orange); transform: translateY(-3px); }
+  .fact .num {
+    font-size: clamp(2.6rem, 4.5vw, 3.8rem);
+    font-weight: 800;
+    color: var(--orange);
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+  .fact .num .unit { font-size: .5em; font-weight: 600; margin-left: .1em; }
+  .fact .label {
+    margin-top: .8rem;
+    color: var(--text);
+    font-size: .95rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .fact .desc {
+    margin-top: .4rem;
+    color: var(--muted);
+    font-size: .82rem;
+    line-height: 1.45;
+  }
+
+  /* Список пунктов */
+  .points { list-style: none; display: grid; gap: 1rem; max-width: 65ch; }
+  .points li {
+    display: flex;
+    gap: 1.1rem;
+    align-items: flex-start;
+    font-size: clamp(.95rem, 1.25vw, 1.1rem);
+    line-height: 1.55;
+    color: #c8cdd8;
+    padding: .7rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .points li:last-child { border-bottom: none; }
+  .points .num {
+    color: var(--orange);
+    font-weight: 700;
+    font-size: .85rem;
+    min-width: 1.6rem;
+    padding-top: .2rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .points strong { color: var(--text); font-weight: 600; }
+
+  /* Карточки */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin-top: .5rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.6rem 1.4rem;
+    transition: border-color .3s, background .3s;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover { border-color: var(--orange); background: var(--bg-card-hover); }
+  .card .badge {
+    font-size: .7rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--orange);
+    font-weight: 700;
+    margin-bottom: .8rem;
+  }
+  .card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: .5rem;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+  }
+  .card .year {
+    color: var(--orange);
+    font-weight: 600;
+    font-size: .85rem;
+    margin-bottom: .6rem;
+  }
+  .card p { color: var(--muted); font-size: .88rem; line-height: 1.5; }
+
+  /* Две колонки */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+    margin-top: .5rem;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 1.8rem;
+  }
+  .panel-title {
+    font-size: .75rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--orange);
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .panel-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--orange);
+    display: inline-block;
+  }
+
+  .mini-list { list-style: none; display: grid; gap: .7rem; }
+  .mini-list li {
+    font-size: .92rem;
+    line-height: 1.5;
+    color: #c8cdd8;
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .mini-list li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: .55em;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--orange);
+  }
+  .mini-list strong { color: var(--text); font-weight: 600; }
+
+  /* Тезис-выделение */
+  .thesis {
+    margin-top: 1.5rem;
+    padding: 1.2rem 1.5rem;
+    border-left: 3px solid var(--orange);
+    background: var(--orange-soft);
+    border-radius: 0 12px 12px 0;
+    font-size: clamp(.95rem, 1.2vw, 1.05rem);
+    line-height: 1.55;
+    color: #dfe3ea;
+    max-width: 65ch;
+  }
+  .thesis strong { color: var(--orange); font-weight: 700; }
+
+  /* Титул */
+  .title-slide { justify-content: center; }
+  .title-slide .uni {
+    font-size: .8rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    font-weight: 500;
+  }
+  .title-slide h1 { max-width: 24ch; }
+  .title-slide .meta {
+    display: flex;
+    gap: 3rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+  }
+  .meta-block .meta-label {
+    font-size: .7rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .4rem;
+    font-weight: 600;
+  }
+  .meta-block .meta-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .meta-block .meta-value span { color: var(--orange); }
+
+  /* Финальный слайд */
+  .final { align-items: flex-start; }
+  .final .big-thanks {
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.03em;
+    margin-bottom: 1.5rem;
+  }
+  .final .big-thanks .accent { color: var(--orange); }
+
+  /* Навигация */
+  .nav {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(18,23,34,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 6px 14px;
+    z-index: 10;
+  }
+  .nav button {
+    background: none; border: none;
+    color: var(--text); cursor: pointer;
+    font-size: 1.1rem; width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    transition: background .2s, color .2s;
+  }
+  .nav button:hover { background: var(--orange-soft); color: var(--orange); }
+  .counter {
+    font-size: .75rem;
+    color: var(--muted);
+    letter-spacing: .12em;
+    min-width: 4rem;
+    text-align: center;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--orange);
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    z-index: 10;
+    box-shadow: 0 0 12px var(--orange-glow);
+  }
+
+  .brand {
+    position: fixed;
+    top: 24px; left: 8vw;
+    font-size: .7rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    z-index: 10;
+    font-weight: 600;
+  }
+  .brand span { color: var(--orange); }
+
+  .slide-num {
+    position: fixed;
+    top: 24px; right: 8vw;
+    font-size: .7rem;
+    letter-spacing: .2em;
+    color: var(--muted);
+    z-index: 10;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* АДАПТИВ ПОД МОБИЛЬНЫЕ ТЕЛЕФОНЫ */
+  @media (max-width: 768px) {
+    .slide { 
+      padding: 8vh 5vw; 
+      padding-bottom: 110px; /* Место под пальцы и навигацию */
+      justify-content: flex-start; /* Контент начинает идти сверху */
+    }
+    .title-slide, .final { justify-content: center; }
+    
+    /* Переводим сетки в одну колонку */
+    .two-col { grid-template-columns: 1fr; gap: 1rem; }
+    .fact-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .cards { grid-template-columns: 1fr; gap: 1rem; }
+    
+    .title-slide .meta { gap: 1.5rem; }
+    .brand, .slide-num { display: none; } /* Убираем лишний текст сверху на телефоне */
+    
+    /* Увеличиваем кнопки для пальцев */
+    .nav { bottom: 16px; padding: 8px 20px; gap: 1.5rem; }
+    .nav button { font-size: 1.4rem; width: 44px; height: 44px; }
+    .counter { font-size: .9rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="brand">ВГЛТУ <span>•</span> Международные автоперевозки</div>
+<div class="slide-num" id="slideNum">01 / 12</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1. ТИТУЛ -->
+  <section class="slide title-slide active">
+    <div class="uni">Воронежский государственный лесотехнический университет им. Г.Ф. Морозова</div>
+    <h1>Организация международных <span class="accent">автомобильных</span> перевозок</h1>
+    <p class="subtitle">Особенности и требования: правовая база, разрешительная система, цифровизация и вызовы современного рынка.</p>
+    <div class="meta">
+      <div class="meta-block">
+        <div class="meta-label">Студенты</div>
+        <div class="meta-value">Парфенова Д.А., Иванов А.А.</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Группа</div>
+        <div class="meta-value">ОП1-244-ОТ</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Руководитель</div>
+        <div class="meta-value">Кузеватов Д.И.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. АКТУАЛЬНОСТЬ -->
+  <section class="slide">
+    <div class="kicker">Актуальность</div>
+    <h2>Логистика меняет маршруты</h2>
+    <div class="fact-grid">
+      <div class="fact">
+        <div class="num">80<span class="unit">%</span></div>
+        <div class="label">грузов в ЕАЭС</div>
+        <div class="desc">перевозится автомобильным транспортом</div>
+      </div>
+      <div class="fact">
+        <div class="num">2</div>
+        <div class="label">новых коридора</div>
+        <div class="desc">«Север — Юг» и «Запад — Восток»</div>
+      </div>
+      <div class="fact">
+        <div class="num">2026</div>
+        <div class="label">новая реальность</div>
+        <div class="desc">безразрешительная система с ЕС и Великобританией</div>
+      </div>
+    </div>
+    <div class="thesis">Перевозчики вынуждены <strong>оперативно адаптироваться</strong> к новым правилам, чтобы сохранять конкурентоспособность и обеспечивать своевременную доставку.</div>
+  </section>
+
+  <!-- 3. ЧТО ТАКОЕ -->
+  <section class="slide">
+    <div class="kicker">Определение</div>
+    <h2>Что такое международная автоперевозка?</h2>
+    <p class="subtitle" style="margin-bottom:1.5rem;">Перевозка, при которой пункты отправления и назначения находятся на территории разных государств. Регулируется национальным законодательством и международными договорами.</p>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><span class="dot"></span>Преимущества</div>
+        <ul class="mini-list">
+          <li><strong>Гибкость маршрута</strong> — доставка «от двери до двери»</li>
+          <li><strong>Высокая скорость</strong> на средних расстояниях (до 1000–1500 км)</li>
+          <li><strong>Малые партии</strong> грузов без перевалки</li>
+          <li><strong>Дешевле авиа</strong> при сопоставимой срочности</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="dot"></span>Сложности</div>
+        <ul class="mini-list">
+          <li><strong>Пересечение границ</strong> и таможенный контроль</li>
+          <li><strong>Разрешительные процедуры</strong> в каждой стране</li>
+          <li><strong>Национальные особенности</strong> законодательства транзита</li>
+          <li><strong>Режим труда и отдыха</strong> водителей</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. ПРАВОВАЯ БАЗА -->
+  <section class="slide">
+    <div class="kicker">Нормативно-правовая база</div>
+    <h2>Четыре ключевые конвенции</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="badge">Конвенция</div>
+        <h3>CMR / КДПГ</h3>
+        <div class="year">Женева, 1956</div>
+        <p>Договор международной дорожной перевозки грузов. Накладная CMR, ответственность перевозчика, претензии.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Конвенция</div>
+        <h3>TIR / МДП</h3>
+        <div class="year">Женева, 1975</div>
+        <p>Пересечение границ без повторного оформления деклараций. Единый документ — книжка МДП.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Соглашение</div>
+        <h3>ADR / ДОПОГ</h3>
+        <div class="year">Женева, 1957</div>
+        <p>Перевозка опасных грузов: требования к ТС, упаковке, маркировке, подготовке водителя.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Соглашение</div>
+        <h3>ATP / СПС</h3>
+        <div class="year">Женева, 1970</div>
+        <p>Скоропортящиеся продукты: температурный режим и специальное оборудование ТС.</p>
+      </div>
+    </div>
+    <div class="thesis">Плюс <strong>межправительственные соглашения</strong> и <strong>ФЗ № 127-ФЗ</strong> от 24.07.1998 о госконтроле за международными автоперевозками.</div>
+  </section>
+
+  <!-- 5. РАЗРЕШИТЕЛЬНАЯ СИСТЕМА -->
+  <section class="slide">
+    <div class="kicker">Допуск к перевозкам</div>
+    <h2>Разрешительная система</h2>
+    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+      <div class="card">
+        <div class="badge">Тип 01</div>
+        <h3>Двусторонние</h3>
+        <p>Перевозки между двумя государствами, подписавшими соглашение.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Тип 02</div>
+        <h3>Транзитные</h3>
+        <p>Проезд через территорию третьего государства.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Тип 03</div>
+        <h3>Многосторонние</h3>
+        <p>Перевозки на территории нескольких государств без отдельных разрешений.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Тип 04</div>
+        <h3>Специальные разовые</h3>
+        <p>Для конкретной перевозки: грузы третьих государств, негабарит.</p>
+      </div>
+    </div>
+    <div class="thesis">Тенденция: <strong>отмена разрешений</strong>. С 1 января 2026 года — безразрешительная система с Великобританией и ЕС (кроме ряда стран).</div>
+  </section>
+
+  <!-- 6. ТРЕБОВАНИЯ К ТС -->
+  <section class="slide">
+    <div class="kicker">Транспортные средства</div>
+    <h2>Требования к подвижному составу</h2>
+    <ul class="points">
+      <li><span class="num">01</span><div><strong>Весовые и габаритные параметры</strong> — соответствие нормам стран транзита и назначения.</div></li>
+      <li><span class="num">02</span><div><strong>Экологические нормы</strong> — стандарты Евро-5 и Евро-6 в странах ЕС.</div></li>
+      <li><span class="num">03</span><div><strong>Техническое состояние</strong> — международный сертификат техосмотра, страховой полис, свидетельство о регистрации.</div></li>
+      <li><span class="num">04</span><div><strong>Спецоборудование</strong> — огнетушители и знаки для ДОПОГ, температурный контроль для СПС.</div></li>
+      <li><span class="num">05</span><div><strong>Допуск под таможенными пломбами</strong> — свидетельство для работы по книжке МДП.</div></li>
+    </ul>
+  </section>
+
+  <!-- 7. ТРЕБОВАНИЯ К ВОДИТЕЛЯМ -->
+  <section class="slide">
+    <div class="kicker">Экипаж</div>
+    <h2>Требования к водителям</h2>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><span class="dot"></span>Документы и подготовка</div>
+        <ul class="mini-list">
+          <li><strong>Водительское удостоверение</strong> нужной категории</li>
+          <li><strong>Загранпаспорт</strong> с действующей визой</li>
+          <li><strong>Свидетельство ДОПОГ</strong> для опасных грузов</li>
+          <li><strong>Знание языка</strong> и ПДД страны транзита</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="dot"></span>Режим труда и отдыха</div>
+        <div class="fact" style="padding:1.4rem; margin-top:.2rem; background:transparent; border:none;">
+          <div class="num">4,5<span class="unit">ч</span></div>
+          <div class="label">максимум непрерывного вождения</div>
+        </div>
+        <ul class="mini-list" style="margin-top:.8rem;">
+          <li>Обязательные перерывы и периоды отдыха</li>
+          <li>Контроль через <strong>тахографы</strong></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. ДОКУМЕНТЫ -->
+  <section class="slide">
+    <div class="kicker">Документационное обеспечение</div>
+    <h2>Пакет документов перевозки</h2>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title"><span class="dot"></span>Базовые документы</div>
+        <ul class="mini-list">
+          <li><strong>Накладная CMR</strong> — базовый документ КДПГ, минимум 3 экземпляра</li>
+          <li><strong>Книжка МДП (TIR)</strong> — таможенный документ, выдаёт АСМАП</li>
+          <li><strong>Декларация на товары</strong> — сведения о грузе и сделке</li>
+          <li><strong>Свидетельство о допущении ТС</strong> — для перевозок под пломбами</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><span class="dot"></span>Страхование и сертификаты</div>
+        <ul class="mini-list">
+          <li><strong>CMR-страхование</strong> ответственности перевозчика</li>
+          <li><strong>OCAGO / CTPL</strong> — автогражданская ответственность</li>
+          <li><strong>Сертификаты</strong> — фитосанитарный, ветеринарный, качества</li>
+          <li><strong>Счета-фактуры</strong> и упаковочные листы</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. ТАМОЖНЯ -->
+  <section class="slide">
+    <div class="kicker">Таможенные процедуры</div>
+    <h2>Таможня: курс на автоматизацию</h2>
+    <div class="fact-grid">
+      <div class="fact">
+        <div class="num">15<span class="unit">мин</span></div>
+        <div class="label">проверка предварительной информации</div>
+        <div class="desc">автоматизированная система таможенных органов</div>
+      </div>
+      <div class="fact">
+        <div class="num">01.10<span class="unit">.2026</span></div>
+        <div class="label">новая технология ФТС</div>
+        <div class="desc">Приказ ФТС № 455: операции до прибытия и при убытии</div>
+      </div>
+    </div>
+    <ul class="points" style="margin-top:1.2rem;">
+      <li><span class="num">01</span><div><strong>ТК ЕАЭС</strong> — ст. 88–89: уведомление таможни и декларация на транспортное средство.</div></li>
+      <li><span class="num">02</span><div><strong>Предварительное информирование</strong> в электронном виде до прибытия ТС.</div></li>
+      <li><span class="num">03</span><div><strong>Автоматические решения</strong>: «Ввоз разрешён», «Запрещён», «Требуется контроль».</div></li>
+    </ul>
+  </section>
+
+  <!-- 10. СТРАХОВАНИЕ -->
+  <section class="slide">
+    <div class="kicker">Страхование и ответственность</div>
+    <h2>Защита груза и перевозчика</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="badge">Обязательное</div>
+        <h3>CMR-страхование</h3>
+        <p>Ответственность перевозчика по международной накладной. Покрывает ущерб грузу.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Добровольное</div>
+        <h3>Страхование груза</h3>
+        <p>Оформляет грузовладелец. Риски повреждения, утраты или гибели груза.</p>
+      </div>
+      <div class="card">
+        <div class="badge">Третьи лица</div>
+        <h3>Гражданская ответственность</h3>
+        <p>Ущерб третьим лицам в результате ДТП или действий перевозчика.</p>
+      </div>
+      <div class="card">
+        <div class="badge">По странам</div>
+        <h3>OCAGO / CTPL</h3>
+        <p>Обязательное автострахование в каждой стране маршрута.</p>
+      </div>
+    </div>
+    <div class="thesis">Конвенция CMR устанавливает <strong>предел ответственности</strong> перевозчика. Если стоимость груза выше — рекомендуется дополнительное страхование.</div>
+  </section>
+
+  <!-- 11. ЦИФРОВИЗАЦИЯ -->
+  <section class="slide">
+    <div class="kicker">Цифровизация</div>
+    <h2>Будущее — в электронном документообороте</h2>
+    <div class="fact-grid">
+      <div class="fact">
+        <div class="num">2011</div>
+        <div class="label">старт e-CMR</div>
+        <div class="desc">дополнительный протокол к Конвенции CMR</div>
+      </div>
+      <div class="fact">
+        <div class="num">93</div>
+        <div class="label">цифровых события</div>
+        <div class="desc">полный жизненный цикл накладной</div>
+      </div>
+      <div class="fact">
+        <div class="num">2027<span class="unit">–28</span></div>
+        <div class="label">массовое внедрение</div>
+        <div class="desc">подключение участников к системе e-CMR</div>
+      </div>
+    </div>
+    <ul class="points" style="margin-top:1.2rem;">
+      <li><span class="num">01</span><div><strong>Пилот в ЕАЭС</strong> — трансграничный обмен e-CMR с цифровой подписью и «доверенной третьей стороной».</div></li>
+      <li><span class="num">02</span><div><strong>Цифровая система ЕКМТ</strong> — прозрачность, защита от подделок, ускорение проверок на границах.</div></li>
+    </ul>
+  </section>
+
+  <!-- 12. ЗАКЛЮЧЕНИЕ -->
+  <section class="slide final">
+    <div class="kicker">Заключение</div>
+    <div class="big-thanks">Спасибо за <span class="accent">внимание</span></div>
+    <p class="subtitle" style="max-width:70ch;">Международные автоперевозки требуют комплексного подхода: знания международного права, таможенного регулирования и логистики. Ключевые факторы успеха — мониторинг законодательства, адаптация к геополитическим вызовам и готовность к цифровизации.</p>
+    <div class="thesis" style="margin-top:2rem;">Соблюдение всех требований — <strong>залог успешной и бесперебойной работы</strong> на международном рынке транспортных услуг.</div>
+    <div class="meta" style="display:flex; gap:3rem; margin-top:2.5rem; flex-wrap:wrap;">
+      <div class="meta-block">
+        <div class="meta-label">Студенты</div>
+        <div class="meta-value">Парфенова Д.А., Иванов А.А.</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Группа</div>
+        <div class="meta-value">ОП1-244-ОТ</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Вуз</div>
+        <div class="meta-value">ВГЛТУ им. Г.Ф. Морозова</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Назад">←</button>
+  <span class="counter" id="counter">01 / 12</span>
+  <button id="next" aria-label="Вперёд">→</button>
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const counter = document.getElementById('counter');
+  const slideNum = document.getElementById('slideNum');
+  const progress = document.getElementById('progress');
+  let i = 0;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    counter.textContent = pad(i + 1) + ' / ' + pad(slides.length);
+    if(slideNum) slideNum.textContent = pad(i + 1) + ' / ' + pad(slides.length);
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+  }
+
+  document.getElementById('next').onclick = () => show(i + 1);
+  document.getElementById('prev').onclick = () => show(i - 1);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key.toLowerCase() === 'f') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  show(0);
+</script>
+</body>
+</html>
