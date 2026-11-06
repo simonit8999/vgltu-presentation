@@ -413,6 +413,45 @@
     .nav button { font-size: 1.4rem; width: 44px; height: 44px; }
     .counter { font-size: .9rem; }
   }
+
+  /* ---------- НАСТРОЙКА ДЛЯ ПЕЧАТИ В PDF ---------- */
+  @media print {
+    @page {
+      size: A4 landscape; /* Альбомная ориентация */
+      margin: 0;
+    }
+    html, body {
+      height: auto !important;
+      overflow: visible !important;
+      background: #0b0e14 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .progress, .nav, .brand, .slide-num { 
+      display: none !important; /* Скрываем навигацию и лишние элементы */
+    }
+    .deck { 
+      height: auto; 
+    }
+    .slide {
+      position: relative !important;
+      inset: auto !important;
+      opacity: 1 !important;
+      transform: none !important;
+      pointer-events: auto !important;
+      page-break-after: always;
+      break-after: page;
+      width: 100vw;
+      height: 100vh;
+      padding: 6vh 8vw !important;
+      justify-content: center !important; /* Центрируем контент на листе */
+      overflow: hidden !important; /* Убираем прокрутку для печати */
+    }
+    .slide:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+  }
 </style>
 </head>
 <body>
